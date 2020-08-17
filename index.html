@@ -47,7 +47,7 @@
                 const data = construct_data()
                 generate_graph(data)
             })
-            
+
             if (search_query.length > 0) {
                 const reconstructed_data = reconstruct_data(search_query)
                 generate_graph(reconstructed_data)
@@ -103,7 +103,7 @@
             chart.draw(data, options);
 
             const encoded_data = btoa(arr_data.join(','))
-            a_share.setAttribute('href', `${window.location.protocol}${window.location.host}${window.location.pathname}?d=${encoded_data}`)
+            a_share.setAttribute('href', `${window.location.protocol}//${window.location.host}${window.location.pathname}?d=${encoded_data}`)
             a_share.removeAttribute('hidden')
         }
 
