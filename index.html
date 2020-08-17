@@ -8,7 +8,8 @@
 </head>
 
 <body>
-    <p>None of the data is stored. This project's <a target="_blank" href="https://github.com/vibosxD/dota_behavior_history">source</a> is available for anyone to view.</p>
+    <p>None of the data is stored. This project's <a target="_blank"
+            href="https://github.com/vibosxD/dota_behavior_history">source</a> is available for anyone to view.</p>
     <p><b>Usage:</b></p>
     <p>Go to <a target="_blank"
             href="https://steamcommunity.com/my/gcpd/570/?category=Account&tab=MatchPlayerReportIncoming">https://steamcommunity.com/my/gcpd/570/?category=Account&tab=MatchPlayerReportIncoming</a>
@@ -36,16 +37,23 @@
         function init() {
             const input = document.getElementById('input')
             const convert = document.getElementById('convert')
+            const str_col_date = 'Date'
+            const str_col_behavior = 'Behavior Score'
             convert.addEventListener('click', () => {
                 const parser = new DOMParser
                 const html_text = input.value.trim()
                 const html = parser.parseFromString(html_text, 'text/html')
                 const tr = html.querySelectorAll('.generic_kv_table tbody tr')
-                const arr_data = [['Date', 'Behavior Score']]
+                const header_tr = tr[0]
+                const header_ths = header_tr.querySelectorAll('th')
+                const behavior_col_idx = find_col_idx(header_ths, str_col_behavior)
+                const date_col_idx = find_col_idx(header_ths, str_col_date)
+                const arr_data = [[str_col_date, str_col_behavior]]
+
                 for (let i = tr.length - 1; i > 0; i--) {
                     const td = tr[i].querySelectorAll('td')
-                    const date = new Date(+`${td[1].innerText}000`).toISOString().slice(0, 10)
-                    const behavior_score = +td[td.length - 1].innerText
+                    const date = new Date(+`${td[date_col_idx].innerText}000`).toISOString().slice(0, 10)
+                    const behavior_score = +td[behavior_col_idx].innerText
                     arr_data.push([date, behavior_score])
                 }
                 const data = new google.visualization.arrayToDataTable(arr_data);
@@ -55,10 +63,13 @@
                 }
                 chart = new google.visualization.LineChart(document.getElementById('chart_div'));
                 google.visualization.events.addListener(chart, 'ready', function () {
-                    document.getElementById('chart_div_image').innerHTML = '<p>Savable chart:</p><img src="' + chart.getImageURI() + '">';
+                    document.getElementById('chart_div_image').innerHTML = `<p>Savable chart:</p><img src="${chart.getImageURI()}">`;
                 });
                 chart.draw(data, options);
             })
+        }
+        function find_col_idx(tds, text) {
+            return Array.from(tds).findIndex(td => td.innerHTML === text)
         }
     </script>
 </body>
