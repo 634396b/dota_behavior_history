@@ -55,7 +55,7 @@
                 }
                 chart = new google.visualization.LineChart(document.getElementById('chart_div'));
                 google.visualization.events.addListener(chart, 'ready', function () {
-                    document.getElementById('chart_div_image').innerHTML = '<p>Savable the chart:</p><img src="' + chart.getImageURI() + '">';
+                    document.getElementById('chart_div_image').innerHTML = '<p>Savable chart:</p><img src="' + chart.getImageURI() + '">';
                 });
                 chart.draw(data, options);
             })
