@@ -28,46 +28,85 @@
         <input id="convert" type="button" value="Convert" />
         <div id="chart_div" style="width: 900px; height: 500px"></div>
         <div id="chart_div_image" style="width: 900px; height: 500px"></div>
+        <p><a id="share" href="/" hidden>Copy this link to share this data set</a></p>
     </div>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script type="text/javascript">
+        const search_query = window.location.search.slice(3)
+        const input = document.getElementById('input')
+        const convert = document.getElementById('convert')
+        const a_share = document.getElementById('share')
+        const str_col_date = 'Date'
+        const str_col_behavior = 'Behavior Score'
+
         google.charts.load('current', { 'packages': ['corechart'] });
         google.charts.setOnLoadCallback(init);
         function init() {
-            const input = document.getElementById('input')
-            const convert = document.getElementById('convert')
-            const str_col_date = 'Date'
-            const str_col_behavior = 'Behavior Score'
             convert.addEventListener('click', () => {
-                const parser = new DOMParser
-                const html_text = input.value.trim()
-                const html = parser.parseFromString(html_text, 'text/html')
-                const tr = html.querySelectorAll('.generic_kv_table tbody tr')
-                const header_tr = tr[0]
-                const header_ths = header_tr.querySelectorAll('th')
-                const behavior_col_idx = find_col_idx(header_ths, str_col_behavior)
-                const date_col_idx = find_col_idx(header_ths, str_col_date)
-                const arr_data = [[str_col_date, str_col_behavior]]
-
-                for (let i = tr.length - 1; i > 0; i--) {
-                    const td = tr[i].querySelectorAll('td')
-                    const date = new Date(+`${td[date_col_idx].innerText}000`).toISOString().slice(0, 10)
-                    const behavior_score = +td[behavior_col_idx].innerText
-                    arr_data.push([date, behavior_score])
-                }
-                const data = new google.visualization.arrayToDataTable(arr_data);
-                const options = {
-                    title: 'Behavior score change over time',
-                    curveType: 'function',
-                }
-                chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-                google.visualization.events.addListener(chart, 'ready', function () {
-                    document.getElementById('chart_div_image').innerHTML = `<p>Savable chart:</p><img src="${chart.getImageURI()}">`;
-                });
-                chart.draw(data, options);
+                const data = construct_data()
+                generate_graph(data)
             })
+            
+            if (search_query.length > 0) {
+                const reconstructed_data = reconstruct_data(search_query)
+                generate_graph(reconstructed_data)
+            }
+
         }
+
+        function reconstruct_data(data_to_reconstruct) {
+            const import_data = atob(search_query).split(',')
+            let temp = []
+            const reconstructed_data = [[import_data[0], import_data[1]]]
+            for (let i = 2; i < import_data.length; i++) {
+                if (i % 2 === 0) { // date
+                    temp.push(import_data[i])
+                } else if (i % 2 === 1) { // behavior
+                    temp.push(+ import_data[i])
+                    reconstructed_data.push(temp)
+                    temp = []
+                }
+            }
+            return reconstructed_data
+        }
+        function construct_data() {
+            const parser = new DOMParser
+            const html_text = input.value.trim()
+            const html = parser.parseFromString(html_text, 'text/html')
+            const tr = html.querySelectorAll('.generic_kv_table tbody tr')
+            const header_tr = tr[0]
+            const header_ths = header_tr.querySelectorAll('th')
+            const behavior_col_idx = find_col_idx(header_ths, str_col_behavior)
+            const date_col_idx = find_col_idx(header_ths, str_col_date)
+            const arr_data = [[str_col_date, str_col_behavior]]
+
+            for (let i = tr.length - 1; i > 0; i--) {
+                const td = tr[i].querySelectorAll('td')
+                const date = new Date(+`${td[date_col_idx].innerText}000`).toISOString().slice(0, 10)
+                const behavior_score = +td[behavior_col_idx].innerText
+                arr_data.push([date, behavior_score])
+            }
+            return arr_data
+        }
+
+        function generate_graph(arr_data) {
+            const data = new google.visualization.arrayToDataTable(arr_data);
+            const options = {
+                title: 'Behavior score change over time',
+                curveType: 'function',
+            }
+            const chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            google.visualization.events.addListener(chart, 'ready', function () {
+                document.getElementById('chart_div_image').innerHTML = `<p>Savable chart:</p><img src="${chart.getImageURI()}">`;
+            });
+            chart.draw(data, options);
+
+            const encoded_data = btoa(arr_data.join(','))
+            a_share.setAttribute('href', `${window.location.protocol}${window.location.host}${window.location.pathname}?d=${encoded_data}`)
+            a_share.removeAttribute('hidden')
+        }
+
         function find_col_idx(tds, text) {
             return Array.from(tds).findIndex(td => td.innerHTML === text)
         }
