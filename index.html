@@ -31,6 +31,7 @@
         <p><a id="share" href="/" hidden>Copy this link to share this data set</a></p>
     </div>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script id="lzutf8" src="https://cdn.jsdelivr.net/npm/lzutf8/build/production/lzutf8.min.js"></script>
 
     <script type="text/javascript">
         const search_query = window.location.search.slice(3)
@@ -56,7 +57,7 @@
         }
 
         function reconstruct_data(data_to_reconstruct) {
-            const import_data = search_query.split(',')
+            const import_data = LZUTF8.decompress(search_query, { inputEncoding: 'Base64', outputEncoding: 'String' }).split(',')
             let temp = []
             const reconstructed_data = [[decodeURI(import_data[0]), decodeURI(import_data[1])]]
             for (let i = 2; i < import_data.length; i++) {
@@ -103,8 +104,8 @@
             });
             chart.draw(data, options);
 
-            const encoded_data = arr_data.join(',')
-            a_share.setAttribute('href', `${window.location.protocol}//${window.location.host}${window.location.pathname}?d=${encoded_data}`)
+            const data_str = LZUTF8.compress(arr_data.join(','), { outputEncoding: 'Base64' })
+            a_share.setAttribute('href', `${window.location.protocol}//${window.location.host}${window.location.pathname}?d=${data_str}`)
             a_share.removeAttribute('hidden')
         }
 
