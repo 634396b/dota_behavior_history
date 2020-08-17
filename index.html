@@ -42,7 +42,7 @@
                 const html = parser.parseFromString(html_text, 'text/html')
                 const tr = html.querySelectorAll('.generic_kv_table tbody tr')
                 const arr_data = [['Date', 'Behavior Score']]
-                for (let i = 1; i < tr.length; i++) {
+                for (let i = tr.length - 1; i > 0; i--) {
                     const td = tr[i].querySelectorAll('td')
                     const date = new Date(+`${td[1].innerText}000`).toISOString().slice(0, 10)
                     const behavior_score = +td[td.length - 1].innerText
