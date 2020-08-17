@@ -1,0 +1,64 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>xD!</title>
+    <meta name="author" content="SitePoint">
+
+</head>
+
+<body>
+    <p><b>Usage:</b></p>
+    <p>Go to <a target="_blank"
+            href="https://steamcommunity.com/my/gcpd/570/?category=Account&tab=MatchPlayerReportIncoming">https://steamcommunity.com/my/gcpd/570/?category=Account&tab=MatchPlayerReportIncoming</a>
+    </p>
+    <p>Scroll to the bottom and keep clicking "LOAD MORE HISTORY" until there is no more to load</p>
+    <img src="loadmore.png"width="1080px" />
+    <p>Open up the developer console for browser (usually F12 is the key)</p>
+    <p>Enter into the console and press enter: document.getElementById('personaldata_elements_container').innerHTML</p>
+    <img src="console.png"width="1080px"/>
+    <p>Copy the resulting text, or click copy (for chrome)</p>
+    <img src="result_console.png" width="1080px"/>
+    <div>
+        <p>Insert the HTML code here and press convert:</p>
+        <textarea cols=150 rows=25 id="input"></textarea>
+        <input id="convert" type="button" value="Convert" />
+        <div id="chart_div" style="width: 900px; height: 500px"></div>
+    </div>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(init);
+        function init() {
+            const input = document.getElementById('input')
+            const convert = document.getElementById('convert')
+            convert.addEventListener('click', () => {
+                const parser = new DOMParser
+                const html_text = input.value.trim()
+                const html = parser.parseFromString(html_text, 'text/html')
+                const tr = html.querySelectorAll('.generic_kv_table tbody tr')
+                const arr_data = [['Date', 'Behavior Score']]
+                for (let i = 1; i < tr.length; i++) {
+                    const td = tr[i].querySelectorAll('td')
+                    const date = new Date(+`${td[1].innerText}000`).toISOString().slice(0, 10)
+                    const behavior_score = +td[td.length - 1].innerText
+                    arr_data.push([date, behavior_score])
+                }
+                console.log(arr_data)
+                const data = new google.visualization.arrayToDataTable(arr_data);
+                const options = {
+                    title: 'Behavior score change over time',
+                    curveType: 'function',
+                }
+                chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+                chart.draw(data, options);
+            })
+        }
+    </script>
+</body>
+
+</html>
