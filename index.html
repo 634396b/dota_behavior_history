@@ -58,7 +58,7 @@
         function reconstruct_data(data_to_reconstruct) {
             const import_data = search_query.split(',')
             let temp = []
-            const reconstructed_data = [[import_data[0], import_data[1]]]
+            const reconstructed_data = [[decodeURI(import_data[0]), decodeURI(import_data[1])]]
             for (let i = 2; i < import_data.length; i++) {
                 if (i % 2 === 0) { // date
                     temp.push(import_data[i])
@@ -95,6 +95,7 @@
             const options = {
                 title: 'Behavior score change over time',
                 curveType: 'function',
+                vAxis: { viewWindow: { max: 10000 } }
             }
             const chart = new google.visualization.LineChart(document.getElementById('chart_div'));
             google.visualization.events.addListener(chart, 'ready', function () {
